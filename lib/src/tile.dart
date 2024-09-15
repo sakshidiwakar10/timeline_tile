@@ -371,6 +371,8 @@ class _TimelinePainter extends CustomPainter {
         afterLinePaint = Paint()
           ..color = afterLineStyle.color
           ..strokeWidth = afterLineStyle.thickness,
+        afterLineStyle = afterLineStyle,
+        beforeLineStyle = beforeLineStyle,
         indicatorPaint =
             !paintIndicator ? null : (Paint()..color = indicatorStyle.color),
         indicatorXY = indicatorStyle.indicatorXY,
@@ -417,6 +419,10 @@ class _TimelinePainter extends CustomPainter {
 
   /// A gap/space between the line and the indicator
   final double indicatorEndGap;
+
+  ///For TrackLimo Project
+  final LineStyle afterLineStyle;
+  final LineStyle beforeLineStyle;
 
   /// The size from the indicator. If it is the default indicator, the height
   /// will be equal to the width (when axis vertical), or the width will be
@@ -565,6 +571,29 @@ class _TimelinePainter extends CustomPainter {
     }
   }
 
+  void _drawDashedLine(Canvas canvas, Offset start, Offset end, Paint paint, List<double> dashPattern) {
+    double totalLength = (end - start).distance;
+    double currentLength = 0.0;
+
+    bool drawLine = true;
+    int dashIndex = 0;
+
+    while (currentLength < totalLength) {
+      final dashLength = dashPattern[dashIndex % dashPattern.length];
+      final nextLength = currentLength + dashLength;
+
+      if (drawLine) {
+        final dashStart = start + (end - start) * (currentLength / totalLength);
+        final dashEnd = start + (end - start) * (nextLength / totalLength);
+        canvas.drawLine(dashStart, dashEnd, paint);
+      }
+
+      drawLine = !drawLine;
+      currentLength = nextLength;
+      dashIndex++;
+    }
+  }
+
   void _drawBeforeLine(
       Canvas canvas, double centerAxis, AxisPosition position) {
     final beginTopLine = axis == TimelineAxis.vertical
@@ -574,12 +603,11 @@ class _TimelinePainter extends CustomPainter {
         ? Offset(centerAxis, position.firstSpace.end)
         : Offset(position.firstSpace.end, centerAxis);
 
-    final lineSize =
-        axis == TimelineAxis.vertical ? endTopLine.dy : endTopLine.dx;
-    // if the line size is less or equal than 0, the line shouldn't be rendered
-    if (lineSize > 0) {
-      canvas.drawLine(beginTopLine, endTopLine, beforeLinePaint);
-    }
+    // final lineSize =
+    //     axis == TimelineAxis.vertical ? endTopLine.dy : endTopLine.dx;
+    
+      _drawDashedLine(canvas, beginTopLine, endTopLine, beforeLinePaint, beforeLineStyle.dashPattern);
+    
   }
 
   void _drawAfterLine(Canvas canvas, double centerAxis, AxisPosition position) {
@@ -590,12 +618,10 @@ class _TimelinePainter extends CustomPainter {
         ? Offset(centerAxis, position.secondSpace.end)
         : Offset(position.secondSpace.end, centerAxis);
 
-    final lineSize = axis == TimelineAxis.vertical
-        ? endBottomLine.dy - beginBottomLine.dy
-        : endBottomLine.dx - beginBottomLine.dx;
-    // if the line size is less or equal than 0, the line shouldn't be rendered
-    if (lineSize > 0) {
-      canvas.drawLine(beginBottomLine, endBottomLine, afterLinePaint);
-    }
+    // final lineSize = axis == TimelineAxis.vertical
+    //     ? endBottomLine.dy - beginBottomLine.dy
+    //     : endBottomLine.dx - beginBottomLine.dx;
+      _drawDashedLine(canvas, beginBottomLine, endBottomLine, afterLinePaint, afterLineStyle.dashPattern);
+    // }
   }
 }

@@ -85,10 +85,15 @@ class LineStyle {
   const LineStyle({
     this.color = Colors.grey,
     this.thickness = 4,
+    this.dashPattern = const [5, 3]
   });
 
   /// The color used to paint the line. It defaults to ([Colors.grey]).
   final Color color;
+
+  // Change for TrackLimo
+  //Dash Pattern in the Line. It defaults value ([0, 0]).
+  final List<double> dashPattern;
 
   /// The thickness from the line. It can't be bigger than ([IndicatorStyle.width])
   /// and defaults to 4.
